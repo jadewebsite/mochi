@@ -243,12 +243,11 @@
         const model = document.getElementById("model").value;
         const [width, height] = document.getElementById("size").value.split(",").map(Number);
 
-        const res = await fetch(`https://api-inference.huggingface.co/models/${model}`, {
+        const res = await fetch(`https://router.huggingface.co/hf-inference/models/${model}`, {
           method: "POST",
           headers: {
             "Authorization": `Bearer ${token}`,
             "Content-Type": "application/json",
-            "x-use-cache": "0",
           },
           body: JSON.stringify({
             inputs: prompt,
