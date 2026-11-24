@@ -248,13 +248,28 @@
           headers: {
             "Authorization": `Bearer ${token}`,
             "Content-Type": "application/json",
+            "x-use-cache": "0",
           },
-          body: JSON.stringify({ inputs: prompt, parameters: { width, height } }),
+          body: JSON.stringify({
+            inputs: prompt,
+            parameters: { width, height, num_inference_steps: 4 },
+          }),
         });
 
         if (!res.ok) {
           let msg = "Image generation failed.";
-          try { const j = await res.json(); msg = j.error || msg; } catch {}
+          try {
+            const j = await res.json();
+            msg = j.error || (j[0] && j[0].error) || msg;
+          } catch {}
+          showError(`Error ${res.status}: ${msg}`);
+          return;
+        }
+
+        const contentType = res.headers.get("content-type") || "";
+        if (!contentType.startsWith("image/")) {
+          const j = await res.json().catch(() => ({}));
+          const msg = j.error || j[0]?.error || "Unexpected response from server.";
           showError(msg);
           return;
         }
@@ -263,7 +278,7 @@
         const url = URL.createObjectURL(blob);
         addToGallery(url, prompt);
       } catch (e) {
-        showError("Request failed. Check your internet connection and token.");
+        showError("Request failed: " + (e.message || "Check your internet connection and token."));
       } finally {
         setLoading(false);
       }
