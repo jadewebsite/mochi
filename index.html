@@ -162,11 +162,11 @@
       <div class="option-group">
         <label>Model</label>
         <select id="model">
-          <option value="stabilityai/stable-diffusion-3.5-large-turbo">SD 3.5 Turbo (fast)</option>
-          <option value="stabilityai/stable-diffusion-3.5-large">SD 3.5 Large (quality)</option>
-          <option value="stabilityai/stable-diffusion-3-medium-diffusers">SD 3 Medium</option>
-          <option value="black-forest-labs/FLUX.1-schnell">Flux Schnell</option>
-          <option value="black-forest-labs/FLUX.1-dev">Flux Dev</option>
+          <option value="ZB-Tech/Text-to-Image">ZB Text-to-Image (free)</option>
+          <option value="alvdansen/littletinies">LittleTinies</option>
+          <option value="Yntec/epiCPhotoGasm">epiCPhotoGasm</option>
+          <option value="stabilityai/stable-diffusion-2-1">SD 2.1</option>
+          <option value="runwayml/stable-diffusion-v1-5">SD 1.5</option>
         </select>
       </div>
       <div class="option-group">
@@ -245,7 +245,7 @@
         const model = document.getElementById("model").value;
         const [width, height] = document.getElementById("size").value.split(",").map(Number);
 
-        const res = await fetch(`https://router.huggingface.co/hf-inference/models/${model}`, {
+        const res = await fetch(`https://api-inference.huggingface.co/models/${model}`, {
           method: "POST",
           headers: {
             "Authorization": `Bearer ${token}`,
@@ -253,7 +253,7 @@
           },
           body: JSON.stringify({
             inputs: prompt,
-            parameters: { width, height, num_inference_steps: 4 },
+            parameters: { width, height },
           }),
         });
 
@@ -326,7 +326,7 @@
   </script>
 
   <div style="margin-top:3rem;text-align:center;font-size:0.72rem;color:#3a3a4e;border-top:1px solid #1e1e28;padding-top:1rem;width:100%;max-width:680px;">
-    Text to Image AI &nbsp;·&nbsp; v1.3 &nbsp;·&nbsp; 2026-11-24
+    Text to Image AI &nbsp;·&nbsp; v1.4 &nbsp;·&nbsp; 2026-11-24
   </div>
 </body>
 </html>
