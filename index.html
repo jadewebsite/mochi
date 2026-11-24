@@ -27,36 +27,47 @@
   }
 
   /* ---- Header ---- */
-  header { text-align: center; padding: 56px 16px 28px; }
-  .paw { font-size: 2.2rem; display: block; margin-bottom: 4px; }
+  header {
+    position: relative;
+    text-align: center;
+    padding: 56px 16px 90px;
+    color: #fff;
+    background:
+      radial-gradient(circle, rgba(255,255,255,.22) 3px, transparent 4px) 0 0 / 28px 28px,
+      linear-gradient(135deg, #e8741f 0%, #f5a742 55%, #ffc46b 100%);
+    box-shadow: 0 8px 24px rgba(217, 101, 27, .25);
+  }
+  /* wavy bottom edge */
+  header::after {
+    content: "";
+    position: absolute; left: 0; right: 0; bottom: -1px; height: 40px;
+    background: var(--cream);
+    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 40' preserveAspectRatio='none'%3E%3Cpath d='M0 40V20Q150 0 300 20T600 20T900 20T1200 20V40Z'/%3E%3C/svg%3E") center / 100% 100% no-repeat;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 40' preserveAspectRatio='none'%3E%3Cpath d='M0 40V20Q150 0 300 20T600 20T900 20T1200 20V40Z'/%3E%3C/svg%3E") center / 100% 100% no-repeat;
+  }
+  .paws { position: absolute; width: 90px; height: 90px; fill: rgba(255,255,255,.3); }
+  .paws.left  { left: 4%;  top: 18%; transform: rotate(-20deg); }
+  .paws.right { right: 4%; top: 28%; transform: rotate(18deg); }
   header h1 {
     margin: 0;
-    font-size: clamp(2rem, 6vw, 3.4rem);
+    font-size: clamp(2rem, 6vw, 3.6rem);
     font-weight: 800;
-    letter-spacing: .5px;
-    background: linear-gradient(90deg, #d9651b, #f5a742, #d9651b);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
+    letter-spacing: 1px;
+    color: #fff;
+    text-shadow: 0 3px 0 rgba(140, 60, 10, .35), 0 6px 16px rgba(0, 0, 0, .15);
   }
-  .tagline { margin: 8px 0 14px; color: var(--brown-soft); font-style: italic; }
+  .tagline { margin: 8px 0 16px; color: #fff4dd; font-style: italic; letter-spacing: 2px; }
   #count {
     display: inline-block;
-    padding: 5px 16px;
+    padding: 5px 18px;
     border-radius: 999px;
     background: #fff;
-    border: 2px solid var(--peach);
     color: var(--orange);
-    font-weight: 600;
+    font-weight: 700;
     font-size: .9rem;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, .12);
   }
   #count:empty { display: none; }
-  .divider {
-    width: 140px; height: 4px; margin: 22px auto 0;
-    border-radius: 4px;
-    background: repeating-linear-gradient(90deg, var(--orange) 0 10px, transparent 10px 18px);
-    opacity: .5;
-  }
 
   #status { text-align: center; padding: 32px 16px; color: var(--brown-soft); }
 
@@ -72,7 +83,7 @@
     display: block;
     width: 100%;
     margin: 0 0 20px;
-    padding: 8px 8px 12px;
+    padding: 8px;
     border: 0;
     border-radius: 18px;
     background: #fff;
@@ -100,15 +111,6 @@
     height: auto;
     border-radius: 12px;
     background: var(--peach);
-  }
-  .card span {
-    display: block;
-    margin-top: 8px;
-    font-size: .8rem;
-    color: var(--brown-soft);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
   }
   @keyframes pop {
     from { opacity: 0; transform: translateY(14px) scale(.97); }
@@ -149,11 +151,11 @@
 </head>
 <body>
 <header>
-  <span class="paw" aria-hidden="true">&#128062;</span>
+  <svg class="paws left" viewBox="0 0 64 64" aria-hidden="true"><ellipse cx="32" cy="42" rx="15" ry="13"/><ellipse cx="13" cy="26" rx="6" ry="8"/><ellipse cx="25" cy="14" rx="6" ry="8"/><ellipse cx="39" cy="14" rx="6" ry="8"/><ellipse cx="51" cy="26" rx="6" ry="8"/></svg>
+  <svg class="paws right" viewBox="0 0 64 64" aria-hidden="true"><ellipse cx="32" cy="42" rx="15" ry="13"/><ellipse cx="13" cy="26" rx="6" ry="8"/><ellipse cx="25" cy="14" rx="6" ry="8"/><ellipse cx="39" cy="14" rx="6" ry="8"/><ellipse cx="51" cy="26" rx="6" ry="8"/></svg>
   <h1 id="title">Mochi's Gallery</h1>
   <p class="tagline">Relax &middot; Laugh &middot; Enjoy</p>
   <div id="count"></div>
-  <div class="divider"></div>
 </header>
 <div id="status">Loading photos…</div>
 <main id="grid"></main>
@@ -232,12 +234,10 @@ function render() {
     b.type = "button";
     b.className = "card";
     b.style.animationDelay = Math.min(i * 60, 900) + "ms";
-    b.setAttribute("aria-label", "Open " + p.name);
+    b.setAttribute("aria-label", "Open photo " + (i + 1));
     const img = document.createElement("img");
-    img.src = p.url; img.alt = p.name; img.loading = "lazy";
-    const cap = document.createElement("span");
-    cap.textContent = p.name.replace(/\.[^.]+$/, "");
-    b.append(img, cap);
+    img.src = p.url; img.alt = "Photo " + (i + 1); img.loading = "lazy";
+    b.appendChild(img);
     b.addEventListener("click", () => open(i));
     grid.appendChild(b);
   });
@@ -246,8 +246,8 @@ function render() {
 function open(i) {
   current = (i + photos.length) % photos.length;
   $("full").src = photos[current].url;
-  $("full").alt = photos[current].name;
-  $("caption").textContent = photos[current].name + "  (" + (current + 1) + "/" + photos.length + ")";
+  $("full").alt = "Photo " + (current + 1);
+  $("caption").textContent = (current + 1) + " / " + photos.length;
   $("lightbox").classList.add("open");
 }
 function close() { $("lightbox").classList.remove("open"); $("full").removeAttribute("src"); }
