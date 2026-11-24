@@ -1,332 +1,139 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Text to Image AI</title>
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    body {
-      font-family: -apple-system, "Segoe UI", system-ui, sans-serif;
-      background: #0f0f11;
-      color: #e8e8ed;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 2rem 1rem 5rem;
-    }
-
-    header { text-align: center; margin-bottom: 2rem; }
-    header h1 { font-size: 1.9rem; font-weight: 700; color: #fff; }
-    header p { margin-top: 0.4rem; font-size: 0.9rem; color: #8b8b9e; }
-    .badge {
-      display: inline-block; margin-top: 0.5rem;
-      background: #1a3a1a; border: 1px solid #2d6a2d; color: #4ade80;
-      font-size: 0.72rem; font-weight: 600; padding: 0.2rem 0.6rem;
-      border-radius: 20px;
-    }
-
-    .card {
-      background: #1a1a22; border: 1px solid #2e2e3a;
-      border-radius: 14px; padding: 1.5rem; width: 100%; max-width: 680px;
-      margin-bottom: 1rem;
-    }
-
-    label {
-      display: block; font-size: 0.75rem; font-weight: 600; color: #9898b0;
-      text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.4rem;
-    }
-
-    input[type="password"], input[type="text"] {
-      width: 100%; background: #111118; border: 1px solid #2e2e3a;
-      border-radius: 8px; color: #e8e8ed; font-size: 0.93rem;
-      padding: 0.65rem 1rem; outline: none; transition: border-color 0.2s;
-    }
-    input:focus { border-color: #5b5bff; }
-
-    .token-row { display: flex; gap: 0.5rem; align-items: flex-end; }
-    .token-row input { flex: 1; }
-    .token-row button {
-      background: #2a2a38; border: 1px solid #3a3a4e; color: #9898b0;
-      border-radius: 8px; padding: 0.65rem 0.9rem; font-size: 0.8rem;
-      cursor: pointer; white-space: nowrap;
-    }
-    .token-row button:hover { background: #333345; color: #e8e8ed; }
-
-    .token-hint { font-size: 0.75rem; color: #585870; margin-top: 0.4rem; }
-    .token-hint a { color: #5b5bff; text-decoration: none; }
-
-    textarea {
-      width: 100%; background: #111118; border: 1px solid #2e2e3a;
-      border-radius: 8px; color: #e8e8ed; font-size: 0.95rem;
-      line-height: 1.6; padding: 0.75rem 1rem; resize: vertical;
-      min-height: 95px; outline: none; transition: border-color 0.2s;
-      margin-top: 1rem;
-    }
-    textarea:focus { border-color: #5b5bff; }
-
-    .options-row { display: flex; gap: 0.8rem; margin-top: 1rem; flex-wrap: wrap; }
-    .option-group { flex: 1; min-width: 140px; }
-
-    select {
-      width: 100%; background: #111118; border: 1px solid #2e2e3a;
-      border-radius: 8px; color: #e8e8ed; font-size: 0.9rem;
-      padding: 0.6rem 0.8rem; outline: none; cursor: pointer;
-    }
-    select:focus { border-color: #5b5bff; }
-
-    .char-count { font-size: 0.75rem; color: #585870; text-align: right; margin-top: 0.2rem; }
-
-    button#generateBtn {
-      margin-top: 1.2rem; width: 100%; background: #5b5bff; color: #fff;
-      font-size: 1rem; font-weight: 600; border: none; border-radius: 8px;
-      padding: 0.85rem; cursor: pointer; transition: background 0.2s, opacity 0.2s;
-      display: flex; align-items: center; justify-content: center; gap: 0.5rem;
-    }
-    button#generateBtn:hover:not(:disabled) { background: #4848e0; }
-    button#generateBtn:disabled { opacity: 0.5; cursor: not-allowed; }
-
-    .spinner {
-      display: none; width: 18px; height: 18px;
-      border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff;
-      border-radius: 50%; animation: spin 0.75s linear infinite;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    .error-box {
-      display: none; margin-top: 1rem; background: #2a1414;
-      border: 1px solid #7f2626; border-radius: 8px;
-      padding: 0.7rem 1rem; font-size: 0.88rem; color: #f87171;
-    }
-
-    .history-header {
-      max-width: 680px; width: 100%;
-      display: flex; justify-content: space-between; align-items: center; margin-top: 2rem;
-    }
-    .history-header h2 { font-size: 0.95rem; color: #8b8b9e; font-weight: 600; }
-    .history-header button {
-      font-size: 0.78rem; background: none; border: 1px solid #3a3a4e;
-      color: #8b8b9e; border-radius: 6px; padding: 0.28rem 0.65rem; cursor: pointer;
-    }
-    .history-header button:hover { color: #f87171; border-color: #7f2626; }
-
-    #gallery { width: 100%; max-width: 680px; margin-top: 1.2rem; display: flex; flex-direction: column; gap: 1.5rem; }
-
-    .result-item { background: #1a1a22; border: 1px solid #2e2e3a; border-radius: 14px; overflow: hidden; }
-    .result-item img { width: 100%; display: block; border-bottom: 1px solid #2e2e3a; }
-
-    .result-prompt {
-      padding: 0.7rem 1rem; font-size: 0.82rem; color: #9898b0;
-      line-height: 1.5; border-bottom: 1px solid #2e2e3a;
-    }
-    .result-prompt span { color: #7070a0; font-size: 0.72rem; text-transform: uppercase; font-weight: 600; letter-spacing: 0.05em; display: block; margin-bottom: 0.15rem; }
-
-    .result-actions { display: flex; gap: 0.5rem; padding: 0.7rem 1rem; }
-    .result-actions a {
-      flex: 1; text-align: center; padding: 0.5rem; border-radius: 7px;
-      font-size: 0.82rem; font-weight: 600; cursor: pointer; text-decoration: none;
-      border: 1px solid #3a3a4e; background: #2a2a38; color: #e8e8ed;
-    }
-    .result-actions a:hover { background: #333345; }
-
-    #lightbox {
-      display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.92);
-      z-index: 999; align-items: center; justify-content: center; cursor: zoom-out;
-    }
-    #lightbox.active { display: flex; }
-    #lightbox img { max-width: 96vw; max-height: 96vh; border-radius: 8px; }
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Photo Album</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: -apple-system, "Segoe UI", system-ui, sans-serif; background: #111; color: #eee; }
+  header { padding: 24px 16px; text-align: center; }
+  header h1 { margin: 0 0 4px; font-size: 1.6rem; }
+  #count { color: #999; font-size: .9rem; }
+  #status { text-align: center; padding: 24px 16px; color: #bbb; }
+  #grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 8px; padding: 8px; }
+  #grid button { padding: 0; border: 0; background: #222; cursor: pointer; aspect-ratio: 1 / 1; overflow: hidden; }
+  #grid img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .2s; }
+  #grid button:hover img, #grid button:focus-visible img { transform: scale(1.05); }
+  #lightbox { position: fixed; inset: 0; background: rgba(0,0,0,.92); display: none; align-items: center; justify-content: center; z-index: 10; }
+  #lightbox.open { display: flex; }
+  #lightbox img { max-width: 94vw; max-height: 86vh; }
+  #caption { position: absolute; bottom: 12px; left: 0; right: 0; text-align: center; color: #bbb; font-size: .9rem; }
+  .nav { position: absolute; background: none; border: 0; color: #fff; font-size: 2.5rem; cursor: pointer; padding: 16px; }
+  #prev { left: 8px; } #next { right: 8px; } #close { top: 8px; right: 8px; }
+</style>
 </head>
 <body>
-  <header>
-    <h1>Text to Image AI</h1>
-    <p>Free AI image generation on your phone</p>
-    <span class="badge">✦ Powered by Hugging Face — Free</span>
-  </header>
+<header>
+  <h1 id="title">Photo Album</h1>
+  <div id="count"></div>
+</header>
+<div id="status">Loading photos…</div>
+<main id="grid"></main>
 
-  <div class="card">
-    <label>Hugging Face Token</label>
-    <div class="token-row">
-      <input type="password" id="hfToken" placeholder="hf_xxxxxxxxxxxxxxxxxxxxxxxx" autocomplete="off" />
-      <button id="toggleToken">Show</button>
-    </div>
-    <p class="token-hint">Get a free token at <a href="https://huggingface.co/settings/tokens" target="_blank">huggingface.co/settings/tokens</a></p>
+<div id="lightbox" role="dialog" aria-modal="true" aria-label="Photo viewer">
+  <button class="nav" id="close" aria-label="Close">&times;</button>
+  <button class="nav" id="prev" aria-label="Previous photo">&#8249;</button>
+  <img id="full" alt="">
+  <button class="nav" id="next" aria-label="Next photo">&#8250;</button>
+  <div id="caption"></div>
+</div>
 
-    <label style="margin-top:1.2rem;">Prompt</label>
-    <textarea id="prompt" placeholder="A majestic capybara on a tropical beach at sunset, photorealistic, 8K…" maxlength="2000"></textarea>
-    <div class="char-count" id="charCount">0 / 2000</div>
+<script>
+// ---- Settings ----
+// Leave owner/repo empty when hosted on GitHub Pages (auto-detected from the URL).
+// Fill them in for a custom domain or when testing locally.
+const CONFIG = {
+  title: "Photo Album",
+  owner: "",
+  repo: "",
+  folder: "photos",
+  extensions: ["jpg", "jpeg", "png", "gif", "webp", "avif"]
+};
 
-    <div class="options-row">
-      <div class="option-group">
-        <label>Model</label>
-        <select id="model">
-          <option value="ZB-Tech/Text-to-Image">ZB Text-to-Image (free)</option>
-          <option value="alvdansen/littletinies">LittleTinies</option>
-          <option value="Yntec/epiCPhotoGasm">epiCPhotoGasm</option>
-          <option value="stabilityai/stable-diffusion-2-1">SD 2.1</option>
-          <option value="runwayml/stable-diffusion-v1-5">SD 1.5</option>
-        </select>
-      </div>
-      <div class="option-group">
-        <label>Size</label>
-        <select id="size">
-          <option value="1024,1024">1024 × 1024</option>
-          <option value="1280,768">1280 × 768</option>
-          <option value="768,1280">768 × 1280</option>
-          <option value="1920,1080">1920 × 1080</option>
-        </select>
-      </div>
-    </div>
+const $ = (id) => document.getElementById(id);
+let photos = [];
+let current = 0;
 
-    <button id="generateBtn">
-      <span class="spinner" id="spinner"></span>
-      <span id="btnText">Generate Image</span>
-    </button>
-    <div class="error-box" id="errorBox"></div>
-  </div>
+function detectRepo() {
+  if (CONFIG.owner && CONFIG.repo) return { owner: CONFIG.owner, repo: CONFIG.repo };
+  const m = location.hostname.match(/^([a-z0-9-]+)\.github\.io$/i);
+  if (!m) return null;
+  const owner = m[1];
+  const first = location.pathname.split("/").filter(Boolean)[0];
+  const repo = first && !first.includes(".") ? first : owner + ".github.io";
+  return { owner, repo };
+}
 
-  <div class="history-header" id="historyHeader" style="display:none;">
-    <h2>Generated Images</h2>
-    <button id="clearBtn">Clear All</button>
-  </div>
-  <div id="gallery"></div>
-  <div id="lightbox"><img id="lightboxImg" src="" alt="" /></div>
+function showStatus(msg) {
+  $("status").textContent = msg;
+  $("status").style.display = msg ? "block" : "none";
+}
 
-  <script>
-    const tokenEl    = document.getElementById("hfToken");
-    const toggleBtn  = document.getElementById("toggleToken");
-    const promptEl   = document.getElementById("prompt");
-    const charCount  = document.getElementById("charCount");
-    const generateBtn= document.getElementById("generateBtn");
-    const spinner    = document.getElementById("spinner");
-    const btnText    = document.getElementById("btnText");
-    const errorBox   = document.getElementById("errorBox");
-    const gallery    = document.getElementById("gallery");
-    const historyHeader = document.getElementById("historyHeader");
-    const clearBtn   = document.getElementById("clearBtn");
-    const lightbox   = document.getElementById("lightbox");
-    const lightboxImg= document.getElementById("lightboxImg");
+async function loadPhotos() {
+  const target = detectRepo();
+  if (!target) {
+    showStatus("Set CONFIG.owner and CONFIG.repo in index.html (not running on GitHub Pages).");
+    return;
+  }
+  const api = "https://api.github.com/repos/" + encodeURIComponent(target.owner) + "/" +
+    encodeURIComponent(target.repo) + "/contents/" + encodeURIComponent(CONFIG.folder);
+  try {
+    const res = await fetch(api, { headers: { Accept: "application/vnd.github+json" } });
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    const items = await res.json();
+    const exts = new Set(CONFIG.extensions);
+    photos = items
+      .filter((f) => f.type === "file" && exts.has(f.name.split(".").pop().toLowerCase()))
+      .sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }))
+      .map((f) => ({ name: f.name, url: CONFIG.folder + "/" + encodeURIComponent(f.name) }));
+    render();
+  } catch (e) {
+    showStatus("Could not load photos. Check the folder name, or try again later (GitHub API rate limit).");
+  }
+}
 
-    // Persist token in localStorage so user doesn't re-enter every time
-    const savedToken = localStorage.getItem("hf_token");
-    if (savedToken) tokenEl.value = savedToken;
+function render() {
+  const grid = $("grid");
+  grid.textContent = "";
+  if (!photos.length) { showStatus("No photos found in the “" + CONFIG.folder + "” folder."); return; }
+  showStatus("");
+  $("count").textContent = photos.length + (photos.length === 1 ? " photo" : " photos");
+  photos.forEach((p, i) => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.setAttribute("aria-label", "Open " + p.name);
+    const img = document.createElement("img");
+    img.src = p.url; img.alt = p.name; img.loading = "lazy";
+    b.appendChild(img);
+    b.addEventListener("click", () => open(i));
+    grid.appendChild(b);
+  });
+}
 
-    toggleBtn.addEventListener("click", () => {
-      const isHidden = tokenEl.type === "password";
-      tokenEl.type = isHidden ? "text" : "password";
-      toggleBtn.textContent = isHidden ? "Hide" : "Show";
-    });
+function open(i) {
+  current = (i + photos.length) % photos.length;
+  $("full").src = photos[current].url;
+  $("full").alt = photos[current].name;
+  $("caption").textContent = photos[current].name + "  (" + (current + 1) + "/" + photos.length + ")";
+  $("lightbox").classList.add("open");
+}
+function close() { $("lightbox").classList.remove("open"); $("full").src = ""; }
 
-    promptEl.addEventListener("input", () => {
-      const len = promptEl.value.length;
-      charCount.textContent = `${len} / 2000`;
-      charCount.classList.toggle("warn", len > 1800);
-    });
+$("close").addEventListener("click", close);
+$("prev").addEventListener("click", () => open(current - 1));
+$("next").addEventListener("click", () => open(current + 1));
+$("lightbox").addEventListener("click", (e) => { if (e.target === $("lightbox")) close(); });
+document.addEventListener("keydown", (e) => {
+  if (!$("lightbox").classList.contains("open")) return;
+  if (e.key === "Escape") close();
+  if (e.key === "ArrowLeft") open(current - 1);
+  if (e.key === "ArrowRight") open(current + 1);
+});
 
-    clearBtn.addEventListener("click", () => { gallery.innerHTML = ""; historyHeader.style.display = "none"; });
-    lightbox.addEventListener("click", () => { lightbox.classList.remove("active"); lightboxImg.src = ""; });
-
-    generateBtn.addEventListener("click", async () => {
-      const token = tokenEl.value.trim();
-      const prompt = promptEl.value.trim();
-
-      if (!token) { showError("Please enter your Hugging Face token."); return; }
-      if (!prompt) { showError("Please enter a prompt."); return; }
-
-      // Save token for next time
-      localStorage.setItem("hf_token", token);
-
-      setLoading(true);
-      hideError();
-
-      try {
-        const model = document.getElementById("model").value;
-        const [width, height] = document.getElementById("size").value.split(",").map(Number);
-
-        const res = await fetch(`https://api-inference.huggingface.co/models/${model}`, {
-          method: "POST",
-          headers: {
-            "Authorization": `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            inputs: prompt,
-            parameters: { width, height },
-          }),
-        });
-
-        if (!res.ok) {
-          let msg = "Image generation failed.";
-          try {
-            const j = await res.json();
-            msg = j.error || (j[0] && j[0].error) || msg;
-          } catch {}
-          showError(`Error ${res.status}: ${msg}`);
-          return;
-        }
-
-        const contentType = res.headers.get("content-type") || "";
-        if (!contentType.startsWith("image/")) {
-          const j = await res.json().catch(() => ({}));
-          const msg = j.error || j[0]?.error || "Unexpected response from server.";
-          showError(msg);
-          return;
-        }
-
-        const blob = await res.blob();
-        const url = URL.createObjectURL(blob);
-        addToGallery(url, prompt);
-      } catch (e) {
-        showError("Request failed: " + (e.message || "Check your internet connection and token."));
-      } finally {
-        setLoading(false);
-      }
-    });
-
-    function addToGallery(url, prompt) {
-      historyHeader.style.display = "flex";
-      const item = document.createElement("div");
-      item.className = "result-item";
-
-      const img = document.createElement("img");
-      img.src = url; img.alt = prompt;
-      img.addEventListener("click", () => { lightboxImg.src = url; lightbox.classList.add("active"); });
-
-      const promptDiv = document.createElement("div");
-      promptDiv.className = "result-prompt";
-      promptDiv.innerHTML = `<span>Prompt</span>${escapeHTML(prompt)}`;
-
-      const actions = document.createElement("div");
-      actions.className = "result-actions";
-
-      const downloadLink = document.createElement("a");
-      downloadLink.href = url;
-      downloadLink.download = `image-${Date.now()}.png`;
-      downloadLink.textContent = "Download";
-
-      actions.appendChild(downloadLink);
-      item.appendChild(img);
-      item.appendChild(promptDiv);
-      item.appendChild(actions);
-      gallery.insertBefore(item, gallery.firstChild);
-    }
-
-    function setLoading(on) {
-      generateBtn.disabled = on;
-      spinner.style.display = on ? "block" : "none";
-      btnText.textContent = on ? "Generating… (10–30s)" : "Generate Image";
-    }
-    function showError(msg) { errorBox.textContent = msg; errorBox.style.display = "block"; }
-    function hideError() { errorBox.style.display = "none"; }
-    function escapeHTML(str) {
-      return str.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
-    }
-  </script>
-
-  <div style="margin-top:3rem;text-align:center;font-size:0.72rem;color:#3a3a4e;border-top:1px solid #1e1e28;padding-top:1rem;width:100%;max-width:680px;">
-    Text to Image AI &nbsp;·&nbsp; v1.4 &nbsp;·&nbsp; 2026-11-24
-  </div>
+document.title = CONFIG.title;
+$("title").textContent = CONFIG.title;
+loadPhotos();
+</script>
 </body>
 </html>
